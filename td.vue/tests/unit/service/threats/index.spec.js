@@ -121,6 +121,26 @@ describe('service/threats/index.js', () => {
         });
     });
 
+    // describe('create new EOP threat', () => {
+    //     let threat;
+
+    //     beforeEach(() => {
+    //         threat = createNewTypedThreat('EOP');
+    //     });
+
+    //     it('has a typed title', () => {
+    //         expect(threat.title).toEqual('New EOP threat');
+    //     });
+
+    //     it('has the default EOP type', () => {
+    //         expect(threat.type).toEqual('Execution');
+    //     });
+
+    //     it('has an EOP modelType', () => {
+    //         expect(threat.modelType).toEqual('EOP');
+    //     });
+    // });
+
     describe('hasOpenThreats', () => {
         it('returns false if there is no data', () => {
             expect(threats.hasOpenThreats(null))
@@ -296,7 +316,7 @@ describe('service/threats/index.js', () => {
 
     describe('filter', () => {
         it('returns an empty array if there are no cells with data', () => {
-            const diagrams = [{ cells: [{}]}];
+            const diagrams = [{ cells: [{}] }];
             const res = threats.filter(diagrams, {});
             expect(res).toEqual([]);
         });
@@ -309,7 +329,7 @@ describe('service/threats/index.js', () => {
 
         it('returns all threats if no filters are provided', () => {
 
-            const diagrams = [{ cells: [{ data: { threats: [{ status: 'mitigated' }]} }] }];
+            const diagrams = [{ cells: [{ data: { threats: [{ status: 'mitigated' }] } }] }];
             const res = threats.filter(diagrams, {});
             expect(res).toHaveLength(1);
         });

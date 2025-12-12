@@ -3,6 +3,7 @@ import ciaDie from './ciadie.js';
 import linddun from './linddun.js';
 import plot4ai from './plot4ai.js';
 import stride from './stride.js';
+import eop from './eop.js';
 
 const swapKeyValuePairs = (obj) => {
     let swappedObj = {};
@@ -23,7 +24,8 @@ const generic = Object.assign(
     Object.assign({ 'threats.model.cia.header': 'ciaHeader' }, swapKeyValuePairs(cia)),
     Object.assign({ 'threats.model.ciedie.header': 'ciaDieHeader' }, swapKeyValuePairs(ciaDie)),
     Object.assign({ 'threats.model.linddun.header': 'linddunHeader' }, swapKeyValuePairs(linddun.all)),
-    Object.assign({ 'threats.model.plot4ai.header': 'plot4aiHeader' }, swapKeyValuePairs(plot4ai.all))
+    Object.assign({ 'threats.model.plot4ai.header': 'plot4aiHeader' }, swapKeyValuePairs(plot4ai.all)),
+    Object.assign({ 'threats.model.eop.header': 'eopHeader' }, swapKeyValuePairs(eop.all))
 );
 
 
@@ -52,6 +54,10 @@ const getByTranslationValue = (translation) => {
         return 'STRIDE';
     }
 
+    if (Object.values(eop.all).find(x => x.toLowerCase() === translation.toLowerCase())) {
+        return 'EOP';
+    }
+
     return '';
 };
 
@@ -60,126 +66,141 @@ const getThreatTypesByElement = (modelType, cellType) => {
 
     switch (modelType.toUpperCase()) {
 
-    case 'CIA' :
-        types = cia;
-        break;
-
-    case 'DIE':
-    case 'CIADIE' :
-        types = ciaDie;
-        break;
-
-    case 'LINDDUN' :
-        if (cellType === 'tm.Actor') {
-            types = linddun.actor;
-        } else {
-            types = linddun.default;
-        }
-        break;
-
-    case 'PLOT4AI' :
-        switch (cellType) {
-        case 'tm.Actor' :
-            types = plot4ai.actor;
+        case 'CIA':
+            types = cia;
             break;
-        case 'tm.Process' :
-            types = plot4ai.process;
+
+        case 'DIE':
+        case 'CIADIE':
+            types = ciaDie;
             break;
-        case 'tm.Store' :
-            types = plot4ai.store;
+
+        case 'LINDDUN':
+            if (cellType === 'tm.Actor') {
+                types = linddun.actor;
+            } else {
+                types = linddun.default;
+            }
             break;
-        case 'tm.Flow' :
+
+        case 'PLOT4AI':
+            switch (cellType) {
+                case 'tm.Actor':
+                    types = plot4ai.actor;
+                    break;
+                case 'tm.Process':
+                    types = plot4ai.process;
+                    break;
+                case 'tm.Store':
+                    types = plot4ai.store;
+                    break;
+                case 'tm.Flow':
+                default:
+                    types = plot4ai.flow;
+                    break;
+            }
+            break;
+
+        case 'STRIDE':
+            switch (cellType) {
+                case 'tm.Actor':
+                    types = stride.actor;
+                    break;
+                case 'tm.Process':
+                    types = stride.process;
+                    break;
+                case 'tm.Store':
+                    types = stride.store;
+                    break;
+                case 'tm.Flow':
+                default:
+                    types = stride.flow;
+                    break;
+            }
+            break;
+
+        case 'EOP':
+            types = eop.default;
+            break;
+
         default:
-            types = plot4ai.flow;
-            break;
-        }
-        break;
-
-    case 'STRIDE' :
-        switch (cellType) {
-        case 'tm.Actor' :
-            types = stride.actor;
-            break;
-        case 'tm.Process' :
-            types = stride.process;
-            break;
-        case 'tm.Store' :
-            types = stride.store;
-            break;
-        case 'tm.Flow' :
-        default:
-            types = stride.flow;
-            break;
-        }
-        break;
-
-    default:
-        return generic;
+            return generic;
     }
-    /**
-     * swapping the key-value pairs of types to be consistent with how generic (returned as default)
-     * is formed
-     */
+
+    if (modelType.toUpperCase() === 'EOP') {
+        const filtered = {};
+        for (let key in types) {
+            if (key.toLowerCase() !== 'spoofing') {
+                filtered[key] = types[key];
+            }
+        }
+        types = filtered;
+    }
+
     return swapKeyValuePairs(types);
 };
 
-const getFrequencyMapByElement = (modelType,cellType) => {
-    let freqMap={};
-    switch(modelType.toUpperCase()){
-    case 'CIA':
-        freqMap = {confidentiality: 0,integrity: 0,availability: 0};
-        break;
-    case 'DIE':
-    case 'CIADIE':
-        freqMap = {confidentiality: 0, integrity: 0, availability: 0, distributed: 0, immutable: 0, ephemeral: 0};
-        break;
-    case 'LINDDUN':
-        if(cellType==='tm.Actor')
-            freqMap = {linkability: 0,identifiability: 0,unawareness: 0};
-        else{
-            Object.keys(linddun.default).map((k)=>{freqMap[k]=0;});
-        }
-        break;
-    case 'PLOT4AI':
-        switch(cellType){
-        case 'tm.Actor' :
-            Object.keys(plot4ai.actor).map((k)=>{freqMap[k]=0;});
+const getFrequencyMapByElement = (modelType, cellType) => {
+    let freqMap = {};
+    switch (modelType.toUpperCase()) {
+        case 'CIA':
+            freqMap = { confidentiality: 0, integrity: 0, availability: 0 };
             break;
-        case 'tm.Process' :
-            Object.keys(plot4ai.process).map((k)=>{freqMap[k]=0;});
+        case 'DIE':
+        case 'CIADIE':
+            freqMap = { confidentiality: 0, integrity: 0, availability: 0, distributed: 0, immutable: 0, ephemeral: 0 };
             break;
-        case 'tm.Store' :
-            Object.keys(plot4ai.store).map((k)=>{freqMap[k]=0;});
+        case 'LINDDUN':
+            if (cellType === 'tm.Actor')
+                freqMap = { linkability: 0, identifiability: 0, unawareness: 0 };
+            else {
+                Object.keys(linddun.default).map((k) => { freqMap[k] = 0; });
+            }
             break;
-        case 'tm.Flow' :
-        default:
-            Object.keys(plot4ai.flow).map((k)=>{freqMap[k]=0;});
+        case 'PLOT4AI':
+            switch (cellType) {
+                case 'tm.Actor':
+                    Object.keys(plot4ai.actor).map((k) => { freqMap[k] = 0; });
+                    break;
+                case 'tm.Process':
+                    Object.keys(plot4ai.process).map((k) => { freqMap[k] = 0; });
+                    break;
+                case 'tm.Store':
+                    Object.keys(plot4ai.store).map((k) => { freqMap[k] = 0; });
+                    break;
+                case 'tm.Flow':
+                default:
+                    Object.keys(plot4ai.flow).map((k) => { freqMap[k] = 0; });
+                    break;
+            }
             break;
-        }
-        break;
-    case 'STRIDE':
-        switch(cellType){
-        case 'tm.Actor' :
-            Object.keys(stride.actor).map((k)=>{freqMap[k]=0;});
+        case 'STRIDE':
+            switch (cellType) {
+                case 'tm.Actor':
+                    Object.keys(stride.actor).map((k) => { freqMap[k] = 0; });
+                    break;
+                case 'tm.Process':
+                    Object.keys(stride.process).map((k) => { freqMap[k] = 0; });
+                    break;
+                case 'tm.Store':
+                    Object.keys(stride.store).map((k) => { freqMap[k] = 0; });
+                    break;
+                case 'tm.Flow':
+                default:
+                    Object.keys(stride.flow).map((k) => { freqMap[k] = 0; });
+                    break;
+            }
+
+        case 'EOP':
+            Object.keys(eop.default).map((k) => { freqMap[k] = 0; });
             break;
-        case 'tm.Process' :
-            Object.keys(stride.process).map((k)=>{freqMap[k]=0;});
-            break;
-        case 'tm.Store' :
-            Object.keys(stride.store).map((k)=>{freqMap[k]=0;});
-            break;
-        case 'tm.Flow' :
-        default:
-            Object.keys(stride.flow).map((k)=>{freqMap[k]=0;});
-            break;
-        }
-        break;
-    default: return null;
+
+        default: return null;
     }
     return freqMap;
 };
 
-const allModels = ['CIA', 'CIADIE', 'LINDDUN', 'PLOT4ai', 'STRIDE'];
+const allModels = ['CIA', 'CIADIE', 'LINDDUN', 'PLOT4ai', 'STRIDE', 'EOP'];
 
 export default {
     getByTranslationValue,
