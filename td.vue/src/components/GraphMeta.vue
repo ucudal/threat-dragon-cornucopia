@@ -32,15 +32,7 @@
                                 :key="idx"
                             >
                                 <td-graph-threats
-                                    :id="threat.id"
-                                    :status="threat.status"
-                                    :severity="threat.severity"
-                                    :description="threat.description"
-                                    :title="threat.title"
-                                    :type="threat.type"
-                                    :mitigation="threat.mitigation"
-                                    :modelType="threat.modelType"
-                                    :number=threat.number
+                                    :threat="threat"
                                     @threatSelected="threatSelected" />
                             </b-col>
                         </b-row>

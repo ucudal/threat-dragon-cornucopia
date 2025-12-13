@@ -75,10 +75,17 @@
                         </b-form-group>
                     </b-col>
                 </b-form-row>
-                
 
+                <!-- BEGINNING ROW GASPI - INFO CARD AND LINK TO THE CARD-->
                 <b-form-row
-                   v-if="threat && threat.modelType === 'EOP' && card.number && filteredCardNumbers.some(option => option.value === card.number)"
+                    v-if="
+                        threat &&
+                        threat.modelType === 'EOP' &&
+                        card.number &&
+                        filteredCardNumbers.some(
+                            (option) => option.value === card.number
+                        )
+                    "
                     style="margin-bottom: 16px"
                 >
                     <b-col>
@@ -86,18 +93,23 @@
                             :href="cornucopiaCardUrl"
                             target="_blank"
                             rel="noopener noreferrer"
-                            :title="'View ' + cornucopiaCardSection + ' ' + cornucopiaCardDetails.sectionID + ' details'"
+                            :title="
+                                'View ' +
+                                cornucopiaCardSection +
+                                ' ' +
+                                cornucopiaCardDetails.sectionID +
+                                ' details'
+                            "
                             style="
                                 font-size: 16px;
                                 font-weight: normal;
                                 color: red;
-
                                 padding: 6px 10px;
                                 border-radius: 4px;
                                 display: inline-block;
                             "
                         >
-                            Card details: {{ cornucopiaCardSection.charAt(0) + cornucopiaCardSection.slice(1).toLowerCase() }}
+                            Card details: {{ cornucopiaCardSection }}
                             {{
                                 cornucopiaCardDetails
                                     ? ` ${cornucopiaCardDetails.sectionID}`
@@ -106,7 +118,7 @@
                         </a>
                     </b-col>
                 </b-form-row>
-
+                <!-- END ROW GASPI - CARD AND LINK TO THE CARD-->
                 <b-form-row>
                     <b-col md="5">
                         <b-form-group
@@ -123,7 +135,6 @@
                             ></b-form-radio-group>
                         </b-form-group>
                     </b-col>
-
                     <b-col md="2">
                         <b-form-group
                             id="score-group"
@@ -137,7 +148,6 @@
                             ></b-form-input>
                         </b-form-group>
                     </b-col>
-
                     <b-col md="5">
                         <b-form-group
                             id="severity-group"
@@ -154,7 +164,6 @@
                         </b-form-group>
                     </b-col>
                 </b-form-row>
-
                 <b-form-row>
                     <b-col>
                         <b-form-group
@@ -171,7 +180,6 @@
                         </b-form-group>
                     </b-col>
                 </b-form-row>
-
                 <b-form-row>
                     <b-col>
                         <b-form-group
@@ -189,7 +197,6 @@
                     </b-col>
                 </b-form-row>
             </b-form>
-
             <template #modal-footer>
                 <div class="w-100">
                     <b-button
@@ -228,16 +235,13 @@
         </b-modal>
     </div>
 </template>
-
 <script>
 import { mapState } from "vuex";
-
 import { CELL_DATA_UPDATED } from "@/store/actions/cell.js";
 import tmActions from "@/store/actions/threatmodel.js";
 import dataChanged from "@/service/x6/graph/data-changed.js";
 import threatModels from "@/service/threats/models/index.js";
 import cornucopiaCardsData from "@/service/schema/cornucopia.json";
-
 export default {
     name: "TdThreatEditDialog",
     computed: {
@@ -249,7 +253,6 @@ export default {
             if (!this.cellRef || !this.threat || !this.threat.modelType) {
                 return [];
             }
-
             const res = [];
             const threatTypes = threatModels.getThreatTypesByElement(
                 this.threat.modelType,
@@ -280,7 +283,6 @@ export default {
                 { value: "Low", text: this.$t("threats.severity.low") },
                 { value: "Medium", text: this.$t("threats.severity.medium") },
                 { value: "High", text: this.$t("threats.severity.high") },
-
                 {
                     value: "Critical",
                     text: this.$t("threats.severity.critical"),
@@ -293,10 +295,10 @@ export default {
         filteredCardNumbers() {
             if (!this.card.suit) return [];
             return this.cardNumbers
-                .filter((carta) => carta.section === this.card.suit)
-                .map((carta) => ({
-                    value: carta.sectionID,
-                    text: carta.sectionID,
+                .filter((card) => card.section === this.card.suit)
+                .map((card) => ({
+                    value: card.sectionID,
+                    text: card.sectionID,
                 }));
         },
         cornucopiaCardDetails() {
@@ -326,7 +328,7 @@ export default {
                 "LINDDUN",
                 "PLOT4ai",
                 "STRIDE",
-                "EoP",
+                "EOP",
             ],
             number: 0,
             card: {
@@ -335,24 +337,25 @@ export default {
             },
             cardSuits: [
                 ...new Set(
-                    cornucopiaCardsData.standards.map((carta) => carta.section)
+                    cornucopiaCardsData.standards.map((card) => card.section)
                 ),
             ],
             cardNumbers: [
-                ...cornucopiaCardsData.standards.map((carta) => ({
-                    section: carta.section,
-                    sectionID: carta.sectionID,
+                ...cornucopiaCardsData.standards.map((card) => ({
+                    section: card.section,
+                    sectionID: card.sectionID,
                 })),
             ],
         };
     },
-     
     methods: {
         editThreat(threatId, state) {
             const crnthreat = this.cellRef.data.threats.find(
                 (x) => x.id === threatId
             );
             this.threat = { ...crnthreat };
+            this.card.suit = this.threat.cardSuit || null;
+            this.card.number = this.threat.cardNumber || null;
             if (!this.threat) {
                 // this should never happen with a valid threatId
                 console.warn(
@@ -390,7 +393,6 @@ export default {
                 threatRef.status = this.threat.status;
                 threatRef.severity = this.threat.severity;
                 threatRef.title = this.threat.title;
-                threatRef.type = this.threat.type;
                 threatRef.description = this.threat.description;
                 threatRef.mitigation = this.threat.mitigation;
                 threatRef.modelType = this.threat.modelType;
@@ -398,6 +400,13 @@ export default {
                 threatRef.number = this.number;
                 threatRef.score = this.threat.score;
                 threatRef.cardId = this.threat.cardId;
+                if (threatRef.modelType === "EOP") {
+                    threatRef.cardSuit = this.card.suit;
+                    threatRef.cardNumber = this.card.number;
+                    threatRef.type = null;
+                } else {
+                    threatRef.type = this.threat.type;
+                }
                 this.$store.dispatch(CELL_DATA_UPDATED, this.cellRef.data);
                 this.$store.dispatch(tmActions.modified);
                 dataChanged.updateStyleAttrs(this.cellRef);
@@ -438,11 +447,9 @@ export default {
                     okVariant: "danger",
                 }
             );
-
             if (!confirmed) {
                 return;
             }
-
             this.deleteThreat();
             this.hideModal();
         },

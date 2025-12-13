@@ -7,9 +7,23 @@
                     <a href="javascript:void(0)" @click="threatSelected()" v-else>{{ title || 'Unknown Threat' }}</a>
                 </b-col>
             </b-row>
-            <b-row>
+            <b-row v-if="modelType !== 'EOP' && type">
                 <b-col>
                     {{ type }}
+                </b-col>
+            </b-row>
+            <b-row v-if="modelType === 'EOP'">
+                <b-col>
+                    <b-row>
+                        <b-col>
+                            {{ cardsuit }}
+                        </b-col>
+                    </b-row>
+                    <b-row>
+                        <b-col>
+                            {{ cardnumber }}
+                        </b-col>
+                    </b-row>
                 </b-col>
             </b-row>
             <b-row>
@@ -107,16 +121,26 @@
 export default {
     name: 'TdGraphThreats',
     props: {
-        id: { type: String },
-        status: { type: String },
-        severity: { type: String },
-        description: { type: String },
-        title: { type: String },
-        type: { type: String },
-        mitigation: { type: String },
-        modelType: { type: String },
-        number: { type: Number }
+        threat: {
+            type: Object,
+            required: true
+        }
     },
+
+    computed: {
+        id() { return this.threat.id; },
+        status() { return this.threat.status; },
+        severity() { return this.threat.severity; },
+        description() { return this.threat.description; },
+        title() { return this.threat.title; },
+        type() { return this.threat.type; },
+        mitigation() { return this.threat.mitigation; },
+        modelType() { return this.threat.modelType; },
+        number() { return this.threat.number; },
+        cardsuit() { return this.threat.cardSuit; },
+        cardnumber() { return this.threat.cardNumber; }
+    },
+
     methods: {
         threatSelected() {
             this.$emit('threatSelected', this.id,'old');
