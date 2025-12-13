@@ -1,18 +1,32 @@
 <template>
-<b-card class="threat-card">
+    <b-card class="threat-card">
         <b-card-text>
             <b-row>
                 <b-col>
-                    <a href="javascript:void(0)" @click="threatSelected()" v-if="!!number">#{{ number }} {{ title || 'Unknown Threat' }}</a>
-                    <a href="javascript:void(0)" @click="threatSelected()" v-else>{{ title || 'Unknown Threat' }}</a>
+                    <a
+                        href="javascript:void(0)"
+                        @click="threatSelected()"
+                        v-if="!!numberResolved"
+                    >
+                        #{{ numberResolved }} {{ titleResolved || 'Unknown Threat' }}
+                    </a>
+                    <a
+                        href="javascript:void(0)"
+                        @click="threatSelected()"
+                        v-else
+                    >
+                        {{ titleResolved || 'Unknown Threat' }}
+                    </a>
                 </b-col>
             </b-row>
-            <b-row v-if="modelType !== 'EOP' && type">
+
+            <b-row v-if="modelTypeResolved !== 'EOP' && typeResolved">
                 <b-col>
-                    {{ type }}
+                    {{ typeResolved }}
                 </b-col>
             </b-row>
-            <b-row v-if="modelType === 'EOP'">
+
+            <b-row v-if="modelTypeResolved === 'EOP'">
                 <b-col>
                     <b-row>
                         <b-col>
@@ -28,50 +42,60 @@
             </b-row>
             <b-row>
                 <b-col>
-                    <font-awesome-icon 
+                    <font-awesome-icon
                         icon="check"
                         class="threat-icon gray-icon"
-                        :title="status"
-                        v-if="status === 'NotApplicable'" />
-                    <font-awesome-icon 
+                        :title="statusResolved"
+                        v-if="statusResolved === 'NotApplicable'"
+                    />
+                    <font-awesome-icon
                         icon="check"
                         class="threat-icon green-icon"
-                        :title="status"
-                        v-if="status === 'Mitigated'" />
-                    <font-awesome-icon 
+                        :title="statusResolved"
+                        v-if="statusResolved === 'Mitigated'"
+                    />
+                    <font-awesome-icon
                         icon="exclamation-triangle"
                         class="threat-icon red-icon"
-                        :title="status"
-                        v-if="status === 'Open'" />
+                        :title="statusResolved"
+                        v-if="statusResolved === 'Open'"
+                    />
 
                     <font-awesome-icon
                         icon="circle"
                         class="threat-icon darkred-icon"
-                        :title="severity"
-                        v-if="severity === 'Critical'" />
-                    <font-awesome-icon 
+                        :title="severityResolved"
+                        v-if="severityResolved === 'Critical'"
+                    />
+                    <font-awesome-icon
                         icon="circle"
                         class="threat-icon red-icon"
-                        :title="severity"
-                        v-if="severity === 'High'" />
-                    <font-awesome-icon 
+                        :title="severityResolved"
+                        v-if="severityResolved === 'High'"
+                    />
+                    <font-awesome-icon
                         icon="circle"
                         class="threat-icon orange-icon"
-                        :title="severity"
-                        v-if="severity === 'Medium'" />
-                    <font-awesome-icon 
+                        :title="severityResolved"
+                        v-if="severityResolved === 'Medium'"
+                    />
+                    <font-awesome-icon
                         icon="circle"
                         class="threat-icon yellow-icon"
-                        :title="severity"
-                        v-if="severity === 'Low'" />
-                    <font-awesome-icon 
+                        :title="severityResolved"
+                        v-if="severityResolved === 'Low'"
+                    />
+                    <font-awesome-icon
                         icon="circle"
                         class="threat-icon gray-icon"
-                        :title="severity"
-                        v-if="severity === 'TBD'" />
+                        :title="severityResolved"
+                        v-if="severityResolved === 'TBD'"
+                    />
                 </b-col>
                 <b-col align-h="end">
-                    <b-badge :v-if="!!modelType">{{ modelType }}</b-badge>
+                    <b-badge v-if="!!modelTypeResolved">
+                        {{ modelTypeResolved }}
+                    </b-badge>
                 </b-col>
             </b-row>
         </b-card-text>
@@ -116,36 +140,65 @@
 }
 
 </style>
-
 <script>
 export default {
     name: 'TdGraphThreats',
     props: {
+        // Nuevo modelo
         threat: {
             type: Object,
-            required: true
-        }
+            required: false,
+            default: null
+        },
+
+        // Modelo antiguo (tests)
+        id: { type: String },
+        status: { type: String },
+        severity: { type: String },
+        description: { type: String },
+        title: { type: String },
+        type: { type: String },
+        mitigation: { type: String },
+        modelType: { type: String },
+        number: { type: Number },
+        cardSuit: { type: String },
+        cardNumber: { type: String }
     },
 
     computed: {
-        id() { return this.threat.id; },
-        status() { return this.threat.status; },
-        severity() { return this.threat.severity; },
-        description() { return this.threat.description; },
-        title() { return this.threat.title; },
-        type() { return this.threat.type; },
-        mitigation() { return this.threat.mitigation; },
-        modelType() { return this.threat.modelType; },
-        number() { return this.threat.number; },
-        cardsuit() { return this.threat.cardSuit; },
-        cardnumber() { return this.threat.cardNumber; }
+        threatData() {
+            return this.threat || {
+                id: this.id ?? '',
+                status: this.status ?? '',
+                severity: this.severity ?? '',
+                description: this.description ?? '',
+                title: this.title ?? '',
+                type: this.type ?? '',
+                mitigation: this.mitigation ?? '',
+                modelType: this.modelType ?? '',
+                number: this.number ?? null,
+                cardSuit: this.cardSuit ?? '',
+                cardNumber: this.cardNumber ?? ''
+            };
+        },
+
+        idResolved() { return this.threatData.id; },
+        statusResolved() { return this.threatData.status; },
+        severityResolved() { return this.threatData.severity; },
+        descriptionResolved() { return this.threatData.description; },
+        titleResolved() { return this.threatData.title; },
+        typeResolved() { return this.threatData.type; },
+        mitigationResolved() { return this.threatData.mitigation; },
+        modelTypeResolved() { return this.threatData.modelType; },
+        numberResolved() { return this.threatData.number; },
+        cardsuit() { return this.threatData.cardSuit; },
+        cardnumber() { return this.threatData.cardNumber; }
     },
 
     methods: {
         threatSelected() {
-            this.$emit('threatSelected', this.id,'old');
+            this.$emit('threatSelected', this.idResolved, 'old');
         }
     }
 };
-
 </script>
